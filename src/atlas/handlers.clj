@@ -21,6 +21,26 @@
            ]
         {:status (:status response-data) :body (json/generate-string response-data)}))))
 
-(defn create-project
+(defn create-project "Inserts new project to DB"
   [request]
-  "Hello world")
+  (let [project-data (json/parse-string (slurp (:body request)) true)]
+    (let [response-data
+          (try (jdbc/with-db-connection [conn db/pg-db]
+                 (let [inserted-project (jdbc/insert! conn :projects {
+                                                             :name (:name project-data)
+                                                             :description (:description project-data)
+                                                             })]
+                   (json/generate-string
+                     {:status 200
+                      :body {:projects inserted-project}}))
+              )
+              (catch Exception e
+                (println :message e)
+                (json/generate-string
+                  {:status 400
+                   :message "Saving project failed"}))
+               )
+          ]
+      {:status (:status response-data) :body response-data}
+      )
+    ))
