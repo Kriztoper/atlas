@@ -170,6 +170,15 @@ The app is fully responsive and adapts to different screen sizes:
 - `npm run preview` - Preview production build locally
 - `npm run lint` - Run ESLint for code quality
 
+## 🎯 API URLs Designed
+```
+POST   /api/projects                     # Create project
+POST   /api/projects/:id/tasks          # Create task  
+POST   /api/tasks/:id/todos             # Add todo
+PATCH  /api/todos/:id/complete          # Toggle todo completion
+DELETE /api/todos/:id                   # Remove todo
+```
+
 Enjoy organizing your projects and todos! 🎉
 
 ## Expanding the ESLint configuration

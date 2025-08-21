@@ -3,6 +3,8 @@ import './App.css'
 import ProjectCard from './components/ProjectCard'
 import TaskCard from './components/TaskCard'
 import TodoItem from './components/TodoItem'
+import APIStatus from './components/APIStatus'
+import { useProjectAPI, useTaskAPI, useTodoAPI } from './hooks/useAPI'
 
 function App() {
   const [projects, setProjects] = useState([])
@@ -11,6 +13,11 @@ function App() {
   const [newProjectName, setNewProjectName] = useState('')
   const [newTaskName, setNewTaskName] = useState('')
   const [newTodoText, setNewTodoText] = useState('')
+
+  // API hooks
+  const projectAPI = useProjectAPI()
+  const taskAPI = useTaskAPI()
+  const todoAPI = useTodoAPI()
 
   // Helper functions to get totals
   const getProjectTaskCount = (project) => project.tasks?.length || 0
@@ -25,8 +32,28 @@ function App() {
   const getTaskCompletedCount = (task) => task.todos?.filter(todo => todo.completed).length || 0
 
   // Project management functions
-  const createProject = () => {
-    if (newProjectName.trim()) {
+  const createProject = async () => {
+    if (!newProjectName.trim()) return
+    
+    try {
+      // Try API call first
+      await projectAPI.createProject(
+        { name: newProjectName.trim() },
+        (apiProject) => {
+          // On API success, use the response from the API
+          const newProject = {
+            ...apiProject,
+            tasks: apiProject.tasks || [],
+          }
+          setProjects([...projects, newProject])
+          setNewProjectName('')
+          setActiveProject(newProject.id)
+          setActiveTask(null)
+        }
+      )
+    } catch (error) {
+      // Fallback to local state if API fails
+      console.warn('API call failed, using local state:', error)
       const newProject = {
         id: Date.now(),
         name: newProjectName.trim(),
@@ -49,15 +76,38 @@ function App() {
   }
 
   // Task management functions
-  const createTask = () => {
-    if (newTaskName.trim() && activeProject) {
+  const createTask = async () => {
+    if (!newTaskName.trim() || !activeProject) return
+    
+    try {
+      // Try API call first
+      await taskAPI.createTask(
+        activeProject,
+        { name: newTaskName.trim() },
+        (apiTask) => {
+          // On API success, use the response from the API
+          const newTask = {
+            ...apiTask,
+            todos: apiTask.todos || [],
+          }
+          setProjects(projects.map(project => 
+            project.id === activeProject 
+              ? { ...project, tasks: [...(project.tasks || []), newTask] }
+              : project
+          ))
+          setNewTaskName('')
+          setActiveTask(newTask.id)
+        }
+      )
+    } catch (error) {
+      // Fallback to local state if API fails
+      console.warn('API call failed, using local state:', error)
       const newTask = {
         id: Date.now(),
         name: newTaskName.trim(),
         todos: [],
         createdAt: new Date().toISOString()
       }
-      
       setProjects(projects.map(project => 
         project.id === activeProject 
           ? { ...project, tasks: [...(project.tasks || []), newTask] }
@@ -83,15 +133,44 @@ function App() {
   }
 
   // Todo management functions
-  const addTodo = () => {
-    if (newTodoText.trim() && activeProject && activeTask) {
+  const addTodo = async () => {
+    if (!newTodoText.trim() || !activeProject || !activeTask) return
+    
+    try {
+      // Try API call first
+      await todoAPI.createTodo(
+        activeTask,
+        { text: newTodoText.trim() },
+        (apiTodo) => {
+          // On API success, use the response from the API
+          const newTodo = {
+            ...apiTodo,
+            completed: apiTodo.completed || false,
+          }
+          setProjects(projects.map(project => 
+            project.id === activeProject
+              ? {
+                  ...project,
+                  tasks: project.tasks.map(task =>
+                    task.id === activeTask
+                      ? { ...task, todos: [...(task.todos || []), newTodo] }
+                      : task
+                  )
+                }
+              : project
+          ))
+          setNewTodoText('')
+        }
+      )
+    } catch (error) {
+      // Fallback to local state if API fails
+      console.warn('API call failed, using local state:', error)
       const newTodo = {
         id: Date.now(),
         text: newTodoText.trim(),
         completed: false,
         createdAt: new Date().toISOString()
       }
-      
       setProjects(projects.map(project => 
         project.id === activeProject
           ? {
@@ -108,42 +187,105 @@ function App() {
     }
   }
 
-  const toggleTodo = (todoId) => {
-    setProjects(projects.map(project => 
-      project.id === activeProject
-        ? {
-            ...project,
-            tasks: project.tasks.map(task =>
-              task.id === activeTask
-                ? {
-                    ...task,
-                    todos: task.todos.map(todo =>
-                      todo.id === todoId ? { ...todo, completed: !todo.completed } : todo
-                    )
-                  }
-                : task
-            )
-          }
-        : project
-    ))
+  const toggleTodo = async (todoId) => {
+    // Find the current todo to get its current state
+    const currentTodo = currentTask?.todos?.find(t => t.id === todoId)
+    if (!currentTodo) return
+    
+    const newCompletedState = !currentTodo.completed
+    
+    try {
+      // Try API call first
+      await todoAPI.markTodoComplete(
+        todoId,
+        newCompletedState,
+        () => {
+          // On API success, update local state
+          setProjects(projects.map(project => 
+            project.id === activeProject
+              ? {
+                  ...project,
+                  tasks: project.tasks.map(task =>
+                    task.id === activeTask
+                      ? {
+                          ...task,
+                          todos: task.todos.map(todo =>
+                            todo.id === todoId ? { ...todo, completed: newCompletedState } : todo
+                          )
+                        }
+                      : task
+                  )
+                }
+              : project
+          ))
+        }
+      )
+    } catch (error) {
+      // Fallback to local state if API fails
+      console.warn('API call failed, using local state:', error)
+      setProjects(projects.map(project => 
+        project.id === activeProject
+          ? {
+              ...project,
+              tasks: project.tasks.map(task =>
+                task.id === activeTask
+                  ? {
+                      ...task,
+                      todos: task.todos.map(todo =>
+                        todo.id === todoId ? { ...todo, completed: newCompletedState } : todo
+                      )
+                    }
+                  : task
+              )
+            }
+          : project
+      ))
+    }
   }
 
-  const deleteTodo = (todoId) => {
-    setProjects(projects.map(project => 
-      project.id === activeProject
-        ? {
-            ...project,
-            tasks: project.tasks.map(task =>
-              task.id === activeTask
-                ? {
-                    ...task,
-                    todos: task.todos.filter(todo => todo.id !== todoId)
-                  }
-                : task
-            )
-          }
-        : project
-    ))
+  const deleteTodo = async (todoId) => {
+    try {
+      // Try API call first
+      await todoAPI.deleteTodo(
+        todoId,
+        () => {
+          // On API success, update local state
+          setProjects(projects.map(project => 
+            project.id === activeProject
+              ? {
+                  ...project,
+                  tasks: project.tasks.map(task =>
+                    task.id === activeTask
+                      ? {
+                          ...task,
+                          todos: task.todos.filter(todo => todo.id !== todoId)
+                        }
+                      : task
+                  )
+                }
+              : project
+          ))
+        }
+      )
+    } catch (error) {
+      // Fallback to local state if API fails
+      console.warn('API call failed, using local state:', error)
+      setProjects(projects.map(project => 
+        project.id === activeProject
+          ? {
+              ...project,
+              tasks: project.tasks.map(task =>
+                task.id === activeTask
+                  ? {
+                      ...task,
+                      todos: task.todos.filter(todo => todo.id !== todoId)
+                    }
+                  : task
+              )
+            }
+          : project
+      ))
+    }
   }
 
   const currentProject = projects.find(p => p.id === activeProject)
@@ -152,6 +294,13 @@ function App() {
   return (
     <div className="app">
       <h1>📋 Atlas</h1>
+      
+      {/* API Status for Project Operations */}
+      <APIStatus
+        loading={projectAPI.loading}
+        error={projectAPI.error}
+        onClearError={projectAPI.clearError}
+      />
       
       {/* Project Creation Section */}
       <div className="project-creation">
@@ -163,8 +312,13 @@ function App() {
             onChange={(e) => setNewProjectName(e.target.value)}
             placeholder="Enter project name..."
             onKeyPress={(e) => e.key === 'Enter' && createProject()}
+            disabled={projectAPI.loading}
           />
-          <button onClick={createProject} disabled={!newProjectName.trim()}>
+          <button 
+            onClick={createProject} 
+            disabled={!newProjectName.trim() || projectAPI.loading}
+            className={projectAPI.loading ? 'loading' : ''}
+          >
             Create Project
           </button>
         </div>
@@ -193,6 +347,13 @@ function App() {
         <div className="tasks-section">
           <h2>🎯 {currentProject.name} - Tasks</h2>
           
+          {/* API Status for Task Operations */}
+          <APIStatus
+            loading={taskAPI.loading}
+            error={taskAPI.error}
+            onClearError={taskAPI.clearError}
+          />
+          
           {/* Add Task */}
           <div className="task-creation">
             <h3>Create New Task</h3>
@@ -203,8 +364,13 @@ function App() {
                 onChange={(e) => setNewTaskName(e.target.value)}
                 placeholder="Enter task name..."
                 onKeyPress={(e) => e.key === 'Enter' && createTask()}
+                disabled={taskAPI.loading}
               />
-              <button onClick={createTask} disabled={!newTaskName.trim()}>
+              <button 
+                onClick={createTask} 
+                disabled={!newTaskName.trim() || taskAPI.loading}
+                className={taskAPI.loading ? 'loading' : ''}
+              >
                 Create Task
               </button>
             </div>
@@ -238,6 +404,13 @@ function App() {
         <div className="todos-section">
           <h2>✅ {currentTask.name} - Todos</h2>
           
+          {/* API Status for Todo Operations */}
+          <APIStatus
+            loading={todoAPI.loading}
+            error={todoAPI.error}
+            onClearError={todoAPI.clearError}
+          />
+          
           {/* Add Todo */}
           <div className="input-group">
             <input
@@ -246,8 +419,13 @@ function App() {
               onChange={(e) => setNewTodoText(e.target.value)}
               placeholder="Add a new todo..."
               onKeyPress={(e) => e.key === 'Enter' && addTodo()}
+              disabled={todoAPI.loading}
             />
-            <button onClick={addTodo} disabled={!newTodoText.trim()}>
+            <button 
+              onClick={addTodo} 
+              disabled={!newTodoText.trim() || todoAPI.loading}
+              className={todoAPI.loading ? 'loading' : ''}
+            >
               Add Todo
             </button>
           </div>

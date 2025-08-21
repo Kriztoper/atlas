@@ -372,6 +372,95 @@ h3 {
   margin: 0;
 }
 
+/* API Status Components */
+.api-status {
+  margin: 1rem 0;
+}
+
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 8px;
+  color: #0369a1;
+  font-size: 0.9rem;
+}
+
+.loading-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #e0f2fe;
+  border-top: 2px solid #0ea5e9;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 0.9rem;
+}
+
+.error-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.error-text {
+  flex: 1;
+}
+
+.error-close-btn {
+  background: none;
+  border: none;
+  color: #dc2626;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  line-height: 1;
+  transition: background-color 0.2s;
+}
+
+.error-close-btn:hover {
+  background: #fecaca;
+}
+
+/* Loading states for buttons */
+.input-group button:disabled.loading {
+  position: relative;
+  color: transparent;
+}
+
+.input-group button:disabled.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #ffffff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   #root {
