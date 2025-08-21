@@ -1,13 +1,28 @@
 import { useState } from 'react'
 import './App.css'
 import ProjectCard from './components/ProjectCard'
+import TaskCard from './components/TaskCard'
 import TodoItem from './components/TodoItem'
 
 function App() {
   const [projects, setProjects] = useState([])
   const [activeProject, setActiveProject] = useState(null)
+  const [activeTask, setActiveTask] = useState(null)
   const [newProjectName, setNewProjectName] = useState('')
+  const [newTaskName, setNewTaskName] = useState('')
   const [newTodoText, setNewTodoText] = useState('')
+
+  // Helper functions to get totals
+  const getProjectTaskCount = (project) => project.tasks?.length || 0
+  const getProjectTodoCount = (project) => {
+    return project.tasks?.reduce((total, task) => total + (task.todos?.length || 0), 0) || 0
+  }
+  const getProjectCompletedCount = (project) => {
+    return project.tasks?.reduce((total, task) => 
+      total + (task.todos?.filter(todo => todo.completed).length || 0), 0) || 0
+  }
+  const getTaskTodoCount = (task) => task.todos?.length || 0
+  const getTaskCompletedCount = (task) => task.todos?.filter(todo => todo.completed).length || 0
 
   // Project management functions
   const createProject = () => {
@@ -15,12 +30,13 @@ function App() {
       const newProject = {
         id: Date.now(),
         name: newProjectName.trim(),
-        todos: [],
+        tasks: [],
         createdAt: new Date().toISOString()
       }
       setProjects([...projects, newProject])
       setNewProjectName('')
       setActiveProject(newProject.id)
+      setActiveTask(null)
     }
   }
 
@@ -28,12 +44,47 @@ function App() {
     setProjects(projects.filter(p => p.id !== projectId))
     if (activeProject === projectId) {
       setActiveProject(null)
+      setActiveTask(null)
+    }
+  }
+
+  // Task management functions
+  const createTask = () => {
+    if (newTaskName.trim() && activeProject) {
+      const newTask = {
+        id: Date.now(),
+        name: newTaskName.trim(),
+        todos: [],
+        createdAt: new Date().toISOString()
+      }
+      
+      setProjects(projects.map(project => 
+        project.id === activeProject 
+          ? { ...project, tasks: [...(project.tasks || []), newTask] }
+          : project
+      ))
+      setNewTaskName('')
+      setActiveTask(newTask.id)
+    }
+  }
+
+  const deleteTask = (taskId) => {
+    setProjects(projects.map(project => 
+      project.id === activeProject
+        ? {
+            ...project,
+            tasks: project.tasks.filter(task => task.id !== taskId)
+          }
+        : project
+    ))
+    if (activeTask === taskId) {
+      setActiveTask(null)
     }
   }
 
   // Todo management functions
   const addTodo = () => {
-    if (newTodoText.trim() && activeProject) {
+    if (newTodoText.trim() && activeProject && activeTask) {
       const newTodo = {
         id: Date.now(),
         text: newTodoText.trim(),
@@ -42,8 +93,15 @@ function App() {
       }
       
       setProjects(projects.map(project => 
-        project.id === activeProject 
-          ? { ...project, todos: [...project.todos, newTodo] }
+        project.id === activeProject
+          ? {
+              ...project,
+              tasks: project.tasks.map(task =>
+                task.id === activeTask
+                  ? { ...task, todos: [...(task.todos || []), newTodo] }
+                  : task
+              )
+            }
           : project
       ))
       setNewTodoText('')
@@ -55,8 +113,15 @@ function App() {
       project.id === activeProject
         ? {
             ...project,
-            todos: project.todos.map(todo =>
-              todo.id === todoId ? { ...todo, completed: !todo.completed } : todo
+            tasks: project.tasks.map(task =>
+              task.id === activeTask
+                ? {
+                    ...task,
+                    todos: task.todos.map(todo =>
+                      todo.id === todoId ? { ...todo, completed: !todo.completed } : todo
+                    )
+                  }
+                : task
             )
           }
         : project
@@ -68,17 +133,25 @@ function App() {
       project.id === activeProject
         ? {
             ...project,
-            todos: project.todos.filter(todo => todo.id !== todoId)
+            tasks: project.tasks.map(task =>
+              task.id === activeTask
+                ? {
+                    ...task,
+                    todos: task.todos.filter(todo => todo.id !== todoId)
+                  }
+                : task
+            )
           }
         : project
     ))
   }
 
   const currentProject = projects.find(p => p.id === activeProject)
+  const currentTask = currentProject?.tasks?.find(t => t.id === activeTask)
 
   return (
     <div className="app">
-      <h1>📋 Project Todo Manager</h1>
+      <h1>📋 Atlas</h1>
       
       {/* Project Creation Section */}
       <div className="project-creation">
@@ -115,10 +188,55 @@ function App() {
         </div>
       )}
 
-      {/* Active Project Todo Management */}
+      {/* Active Project Task Management */}
       {currentProject && (
+        <div className="tasks-section">
+          <h2>🎯 {currentProject.name} - Tasks</h2>
+          
+          {/* Add Task */}
+          <div className="task-creation">
+            <h3>Create New Task</h3>
+            <div className="input-group">
+              <input
+                type="text"
+                value={newTaskName}
+                onChange={(e) => setNewTaskName(e.target.value)}
+                placeholder="Enter task name..."
+                onKeyPress={(e) => e.key === 'Enter' && createTask()}
+              />
+              <button onClick={createTask} disabled={!newTaskName.trim()}>
+                Create Task
+              </button>
+            </div>
+          </div>
+
+          {/* Tasks List */}
+          {currentProject.tasks && currentProject.tasks.length > 0 ? (
+            <div className="tasks-grid">
+              {currentProject.tasks.map(task => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  isActive={activeTask === task.id}
+                  onSelect={setActiveTask}
+                  onDelete={deleteTask}
+                  todoCount={getTaskTodoCount(task)}
+                  completedCount={getTaskCompletedCount(task)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <p>📝 Create your first task to start adding todos!</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Active Task Todo Management */}
+      {currentTask && (
         <div className="todos-section">
-          <h2>📝 {currentProject.name} - Todos</h2>
+          <h2>✅ {currentTask.name} - Todos</h2>
           
           {/* Add Todo */}
           <div className="input-group">
@@ -135,9 +253,9 @@ function App() {
           </div>
 
           {/* Todos List */}
-          {currentProject.todos.length > 0 ? (
+          {currentTask.todos && currentTask.todos.length > 0 ? (
             <div className="todos-list">
-              {currentProject.todos.map(todo => (
+              {currentTask.todos.map(todo => (
                 <TodoItem
                   key={todo.id}
                   todo={todo}

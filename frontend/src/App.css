@@ -113,6 +113,35 @@ h3 {
   margin-bottom: 2rem;
 }
 
+/* Tasks Section */
+.tasks-section {
+  background: #f0f9ff;
+  border: 2px solid #0ea5e9;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.task-creation {
+  background: #e0f2fe;
+  border: 2px dashed #0284c7;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.task-creation h3 {
+  color: #0369a1;
+  margin-bottom: 1rem;
+}
+
+.tasks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
 .projects-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -147,6 +176,68 @@ h3 {
   color: #64748b;
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
+}
+
+/* Task Cards */
+.task-card {
+  background: #fef3c7;
+  border: 2px solid #f59e0b;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.task-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.2);
+}
+
+.task-card.active {
+  border-color: #d97706;
+  background: #fef3c7;
+  box-shadow: 0 4px 20px rgba(217, 119, 6, 0.25);
+}
+
+.task-card h3 {
+  color: #92400e;
+}
+
+.task-card p {
+  color: #a16207;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.task-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.task-actions button {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.task-actions button:not(.delete-btn) {
+  background: #f3e8ff;
+  color: #7c3aed;
+}
+
+.task-actions button:not(.delete-btn):hover {
+  background: #e9d5ff;
+}
+
+.task-actions button.active {
+  background: #7c3aed !important;
+  color: white !important;
 }
 
 .completed-count {
@@ -295,11 +386,16 @@ h3 {
     grid-template-columns: 1fr;
   }
   
+  .tasks-grid {
+    grid-template-columns: 1fr;
+  }
+  
   .input-group {
     flex-direction: column;
   }
   
-  .project-actions {
+  .project-actions,
+  .task-actions {
     flex-direction: column;
   }
   
@@ -314,6 +410,14 @@ h3 {
   }
   
   .project-creation {
+    padding: 1.5rem;
+  }
+  
+  .task-creation {
+    padding: 1rem;
+  }
+  
+  .tasks-section {
     padding: 1.5rem;
   }
   
