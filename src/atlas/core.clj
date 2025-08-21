@@ -1,7 +1,10 @@
 (ns atlas.core
-  (:gen-class))
+  (:gen-class)
+  (:require [ring.adapter.jetty :as jetty]
+            [atlas.routes :as routes]))
 
 (defn -main
-  "I don't do a whole lot ... yet."
   [& args]
-  (println "Hello, World!"))
+  (jetty/run-jetty routes/app
+                   {:port 8080
+                    :join? true}))
