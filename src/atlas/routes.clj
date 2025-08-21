@@ -5,4 +5,5 @@
 
 (compojure/defroutes app
   (compojure/GET "/" params handlers/home)
-  (compojure/POST "/api/projects" params handlers/create-project))
+  (compojure/POST "/api/projects" params handlers/create-project)
+  (compojure/GET "/api/projects" params handlers/all-projects))

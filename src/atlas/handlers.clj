@@ -11,7 +11,7 @@
 (defn all-projects "Fetches all projects"
   [_]
   (jdbc/with-db-connection [conn db/pg-db]
-    (let [projects (jdbc/query conn ["SELECT * FROM projects"])]
+    (let [projects (jdbc/query conn ["SELECT * FROM pjm.project"])]
       (let [response-data
              (if (empty? projects)
                (json/generate-string
@@ -19,9 +19,7 @@
                (json/generate-string projects {:status 200})
              )
            ]
-        {:status (:status response-data) :body response-data}
-      )
-    )))
+        {:status (:status response-data) :body (json/generate-string response-data)}))))
 
 (defn create-project
   [request]
