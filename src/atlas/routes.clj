@@ -4,4 +4,5 @@
             [atlas.handlers :as handlers]))
 
 (compojure/defroutes app
-  (compojure/GET "/" params handlers/home))
+  (compojure/GET "/" params handlers/home)
+  (compojure/POST "/api/projects" params handlers/create-project))
