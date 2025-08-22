@@ -19,7 +19,7 @@ function App() {
   const taskAPI = useTaskAPI()
   const todoAPI = useTodoAPI()
 
-  // Load projects on initial app mount
+  // Load projects on initial app mount (only once)
   useEffect(() => {
     const loadInitialProjects = async () => {
       try {
@@ -39,7 +39,7 @@ function App() {
     }
 
     loadInitialProjects()
-  }, [projectAPI])
+  }, []) // Empty dependency array ensures this runs only once on mount
 
   // Helper functions to get totals
   const getProjectTaskCount = (project) => project.tasks?.length || 0
