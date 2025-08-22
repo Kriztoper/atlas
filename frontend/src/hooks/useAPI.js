@@ -59,6 +59,16 @@ export const useProjectAPI = () => {
     )
   }, [executeAPI])
 
+  const getAllProjects = useCallback(async (onSuccess) => {
+    return executeAPI(
+      () => import('../services/api').then(({ projectAPI }) => projectAPI.getAll()),
+      (fetchedProjects) => {
+        setProjects(fetchedProjects)
+        onSuccess?.(fetchedProjects)
+      }
+    )
+  }, [executeAPI])
+
   const updateProjects = useCallback((updatedProjects) => {
     setProjects(updatedProjects)
   }, [])
@@ -68,6 +78,7 @@ export const useProjectAPI = () => {
     error,
     projects,
     createProject,
+    getAllProjects,
     updateProjects,
     clearError,
   }

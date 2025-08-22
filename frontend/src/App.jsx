@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import ProjectCard from './components/ProjectCard'
 import TaskCard from './components/TaskCard'
@@ -18,6 +18,28 @@ function App() {
   const projectAPI = useProjectAPI()
   const taskAPI = useTaskAPI()
   const todoAPI = useTodoAPI()
+
+  // Load projects on initial app mount
+  useEffect(() => {
+    const loadInitialProjects = async () => {
+      try {
+        await projectAPI.getAllProjects((fetchedProjects) => {
+          // On API success, use the fetched projects with proper nested structure
+          const structuredProjects = fetchedProjects.map(project => ({
+            ...project,
+            tasks: project.tasks || [],
+          }))
+          setProjects(structuredProjects)
+        })
+      } catch (error) {
+        // If API fails, gracefully continue with empty state (no need to set error state here)
+        // The error will already be handled by the API hook and shown in the UI
+        console.warn('Failed to load initial projects, starting with empty state:', error)
+      }
+    }
+
+    loadInitialProjects()
+  }, [projectAPI])
 
   // Helper functions to get totals
   const getProjectTaskCount = (project) => project.tasks?.length || 0
