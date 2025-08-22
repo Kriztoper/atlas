@@ -4,6 +4,8 @@ import ProjectCard from './components/ProjectCard'
 import TaskCard from './components/TaskCard'
 import TodoItem from './components/TodoItem'
 import APIStatus from './components/APIStatus'
+import Breadcrumb from './components/Breadcrumb'
+import ProgressBar from './components/ProgressBar'
 import { useProjectAPI, useTaskAPI, useTodoAPI } from './hooks/useAPI'
 
 function App() {
@@ -313,9 +315,44 @@ function App() {
   const currentProject = projects.find(p => p.id === activeProject)
   const currentTask = currentProject?.tasks?.find(t => t.id === activeTask)
 
+  // Breadcrumb items
+  const breadcrumbItems = []
+  
+  breadcrumbItems.push({
+    label: 'Projects',
+    icon: '🏠',
+    active: !currentProject,
+    onClick: () => {
+      setActiveProject(null)
+      setActiveTask(null)
+    }
+  })
+  
+  if (currentProject) {
+    breadcrumbItems.push({
+      label: currentProject.name,
+      icon: '📁',
+      active: !currentTask,
+      onClick: () => setActiveTask(null)
+    })
+  }
+  
+  if (currentTask) {
+    breadcrumbItems.push({
+      label: currentTask.name,
+      icon: '📝',
+      active: true
+    })
+  }
+
   return (
     <div className="app">
       <h1>📋 Atlas</h1>
+      
+      {/* Breadcrumb Navigation */}
+      {breadcrumbItems.length > 1 && (
+        <Breadcrumb items={breadcrumbItems} />
+      )}
       
       {/* API Status for Project Operations */}
       <APIStatus
