@@ -9,7 +9,8 @@
                  [compojure "1.7.1"]
                  [org.clojure/java.jdbc "0.7.12"]
                  [org.postgresql/postgresql "42.7.3"]
-                 [cheshire "6.0.0"]]
+                 [cheshire "6.0.0"]
+                 [ring-cors "0.1.13"]]
   :main ^:skip-aot atlas.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all

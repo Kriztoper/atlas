@@ -1,9 +1,17 @@
 (ns atlas.routes
-  (:require [compojure.core :as compojure]
-            [compojure.route :as compojure-route]
-            [atlas.handlers :as handlers]))
+  (:require [compojure.core :refer [defroutes GET POST]]
+            [compojure.route :as route]
+            [atlas.handlers :as handlers]
+            [ring.middleware.cors :refer [wrap-cors]]))
 
-(compojure/defroutes app
-  (compojure/GET "/" params handlers/home)
-  (compojure/POST "/api/projects" params handlers/create-project)
-  (compojure/GET "/api/projects" params handlers/all-projects))
+(defroutes app-routes
+  (GET "/" [] handlers/home)
+  (POST "/api/projects" params handlers/create-project)
+  (GET "/api/projects" [] handlers/all-projects)
+  (route/not-found "Not Found"))
+
+(def app
+  (-> app-routes
+      (wrap-cors :access-control-allow-origin #".*"
+                 :access-control-allow-methods [:get :post :put :delete :patch]
+                 :access-control-allow-headers ["Content-Type"])))

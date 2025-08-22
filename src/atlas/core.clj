@@ -5,6 +5,6 @@
 
 (defn -main
   [& args]
-  (jetty/run-jetty routes/app
+  (jetty/run-jetty routes/app-routes
                    {:port 3001
                     :join? true}))
