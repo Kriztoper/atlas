@@ -35,3 +35,12 @@
         {:status 400
          :headers {"Content-Type" "application/json"}
          :body (json/generate-string {:message "Saving project failed"})}))))
+
+;(defn create-task "Inserts new task to DB where it is required to have a parent"
+;  [request]
+;  (let [task-data (json/parse-string (slurp (:body request)) true)]
+;    (try
+;      (jdbc/with-db-connection [conn db/pg-db]
+;        (let [inserted-task (jdbc/insert! conn :pjm.task {:name (:name task-data)
+;                                                          :description (:description task-data)})]
+;          )))))
