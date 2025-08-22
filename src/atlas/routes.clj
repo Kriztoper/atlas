@@ -6,7 +6,7 @@
 
 (defroutes app-routes
   (GET "/" [] handlers/home)
-  (POST "/api/projects" params handlers/create-project)
+  (POST "/api/projects" [] handlers/create-project)
   (GET "/api/projects" [] handlers/all-projects)
   (route/not-found "Not Found"))
 

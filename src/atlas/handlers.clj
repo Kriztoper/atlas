@@ -5,7 +5,7 @@
             [atlas.configuration.database-config :as db]))
 
 (defn home
-  [request]
+  [_]
   "Hello world")
 
 (defn all-projects "Fetches all projects"
@@ -25,9 +25,8 @@
   (let [project-data (json/parse-string (slurp (:body request)) true)]
     (try 
       (jdbc/with-db-connection [conn db/pg-db]
-        (let [inserted-project (jdbc/insert! conn :projects {
-                                                      :name (:name project-data)
-                                                      :description (:description project-data)})]
+        (let [inserted-project (jdbc/insert! conn :pjm.project {:name (:name project-data)
+                                                                :description (:description project-data)})]
           {:status 200
            :headers {"Content-Type" "application/json"}
            :body (json/generate-string (first inserted-project))}))
