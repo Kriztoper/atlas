@@ -1,11 +1,12 @@
 -- :up
-CREATE TABLE IF NOT EXISTS project (
+CREATE TABLE IF NOT EXISTS task (
     id SERIAL PRIMARY KEY,
+    project_id INTEGER NOT NULL REFERENCES project(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE,
-    deleted_at TIMESTAMP WITH TIME ZONE,
+    completed_at TIMESTAMP WITH TIME ZONE,
     is_active BOOLEAN DEFAULT true
 );
 
