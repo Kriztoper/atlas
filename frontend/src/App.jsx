@@ -351,7 +351,19 @@ function App() {
 
   return (
     <div className="app">
-      <h1>📋 Atlas</h1>
+      <h1>
+        <img
+          src="/atlas-logo.svg"
+          alt="SVG icon"
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            marginRight: 0
+          }}
+        />
+        <span>Atlas</span>
+      </h1>
       
       {/* Breadcrumb Navigation */}
       {breadcrumbItems.length > 1 && (
