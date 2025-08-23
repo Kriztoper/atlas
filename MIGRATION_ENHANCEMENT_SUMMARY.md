@@ -149,6 +149,5 @@ resources/migrations/
 - Safe migration execution with pre-checks
 - Comprehensive logging for monitoring
 - Backup recommendations in documentation
-- Schema-based organization (using `pjm` schema)
 
 The enhanced migration system provides a professional, production-ready database management solution that runs seamlessly on application startup while offering powerful development tools for database schema evolution.

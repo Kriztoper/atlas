@@ -11,7 +11,7 @@
 (defn all-projects "Fetches all projects"
   [_]
   (jdbc/with-db-connection [conn db/pg-db]
-    (let [projects (jdbc/query conn ["SELECT * FROM pjm.project"])]
+    (let [projects (jdbc/query conn ["SELECT * FROM project"])]
       (if (empty? projects)
         {:status 200 
          :headers {"Content-Type" "application/json"}
@@ -25,7 +25,7 @@
   (let [project-data (json/parse-string (slurp (:body request)) true)]
     (try 
       (jdbc/with-db-connection [conn db/pg-db]
-        (let [inserted-project (jdbc/insert! conn :pjm.project {:name (:name project-data)
+        (let [inserted-project (jdbc/insert! conn :project {:name (:name project-data)
                                                                 :description (:description project-data)})]
           {:status 200
            :headers {"Content-Type" "application/json"}
@@ -41,6 +41,6 @@
 ;  (let [task-data (json/parse-string (slurp (:body request)) true)]
 ;    (try
 ;      (jdbc/with-db-connection [conn db/pg-db]
-;        (let [inserted-task (jdbc/insert! conn :pjm.task {:name (:name task-data)
+;        (let [inserted-task (jdbc/insert! conn :task {:name (:name task-data)
 ;                                                          :description (:description task-data)})]
 ;          )))))

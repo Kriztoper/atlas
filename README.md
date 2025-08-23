@@ -8,7 +8,6 @@ A Clojure-based backend API for project and task management, featuring automatic
 - 🚀 **RESTful API** - Clean API endpoints for project/task/todo management
 - 🐘 **PostgreSQL Integration** - Robust database integration with schema management
 - 🔧 **Environment Configuration** - Configurable via environment variables
-- 📋 **Schema Organization** - Uses dedicated `pjm` schema for project management
 
 ## Quick Start
 

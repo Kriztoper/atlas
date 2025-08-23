@@ -88,38 +88,28 @@ CREATE TABLE users (
 DROP TABLE users;
 ```
 
-### 2. Use Schema Prefixes
-Use the `pjm` schema for project-related tables:
-```sql
-CREATE TABLE pjm.tasks (
-    id SERIAL PRIMARY KEY,
-    project_id INTEGER REFERENCES pjm.project(id),
-    title VARCHAR(255) NOT NULL
-);
-```
-
-### 3. Make Migrations Idempotent
+### 2. Make Migrations Idempotent
 Use `IF NOT EXISTS` where appropriate:
 ```sql
-CREATE TABLE IF NOT EXISTS pjm.project (
+CREATE TABLE IF NOT EXISTS project (
     -- columns
 );
 
-ALTER TABLE pjm.project 
+ALTER TABLE project 
 ADD COLUMN IF NOT EXISTS description TEXT;
 ```
 
-### 4. Handle Data Migrations Carefully
+### 3. Handle Data Migrations Carefully
 When changing data structure:
 ```sql
 -- Add new column
-ALTER TABLE pjm.project ADD COLUMN status VARCHAR(20) DEFAULT 'active';
+ALTER TABLE project ADD COLUMN status VARCHAR(20) DEFAULT 'active';
 
 -- Populate existing data
-UPDATE pjm.project SET status = 'active' WHERE status IS NULL;
+UPDATE project SET status = 'active' WHERE status IS NULL;
 
 -- Add constraints if needed
-ALTER TABLE pjm.project ALTER COLUMN status SET NOT NULL;
+ALTER TABLE project ALTER COLUMN status SET NOT NULL;
 ```
 
 ## Error Handling
@@ -165,9 +155,9 @@ SELECT * FROM schema_migrations ORDER BY id DESC;
 
 2. **Edit the up migration** (`resources/migrations/TIMESTAMP-add-tasks-table.up.sql`):
    ```sql
-   CREATE TABLE pjm.tasks (
+   CREATE TABLE tasks (
        id SERIAL PRIMARY KEY,
-       project_id INTEGER NOT NULL REFERENCES pjm.project(id) ON DELETE CASCADE,
+       project_id INTEGER NOT NULL REFERENCES project(id) ON DELETE CASCADE,
        title VARCHAR(255) NOT NULL,
        description TEXT,
        status VARCHAR(20) DEFAULT 'todo',
@@ -176,15 +166,15 @@ SELECT * FROM schema_migrations ORDER BY id DESC;
        completed_at TIMESTAMP WITH TIME ZONE
    );
    
-   CREATE INDEX idx_tasks_project_id ON pjm.tasks(project_id);
-   CREATE INDEX idx_tasks_status ON pjm.tasks(status);
+   CREATE INDEX idx_tasks_project_id ON tasks(project_id);
+   CREATE INDEX idx_tasks_status ON tasks(status);
    ```
 
 3. **Edit the down migration** (`resources/migrations/TIMESTAMP-add-tasks-table.down.sql`):
    ```sql
-   DROP INDEX IF EXISTS pjm.idx_tasks_status;
-   DROP INDEX IF EXISTS pjm.idx_tasks_project_id;
-   DROP TABLE IF EXISTS pjm.tasks;
+   DROP INDEX IF EXISTS idx_tasks_status;
+   DROP INDEX IF EXISTS idx_tasks_project_id;
+   DROP TABLE IF EXISTS tasks;
    ```
 
 4. **Run migration:**
@@ -205,16 +195,3 @@ SELECT * FROM schema_migrations ORDER BY id DESC;
 - Test migrations on a staging environment first  
 - Consider using database connection pooling for production
 - Monitor migration execution time for large tables
-- Have a rollback plan ready
-
-## Schema Design
-
-Current schema structure:
-```
-pjm (schema)
-├── project (table)
-├── tasks (planned)
-└── todos (planned)
-```
-
-The `pjm` schema keeps project management tables organized and separate from other potential schemas.
