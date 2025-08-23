@@ -26,6 +26,10 @@ function App() {
     const loadInitialProjects = async () => {
       try {
         await projectAPI.getAllProjects((fetchedProjects) => {
+          if (fetchedProjects.data && fetchedProjects.data.length === 0) {
+            return;
+          }
+
           // On API success, use the fetched projects with proper nested structure
           const structuredProjects = fetchedProjects.map(project => ({
             ...project,

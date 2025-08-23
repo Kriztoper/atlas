@@ -53,7 +53,7 @@ export const useProjectAPI = () => {
     return executeAPI(
       () => import('../services/api').then(({ projectAPI }) => projectAPI.create(projectData)),
       (newProject) => {
-        setProjects(prev => [...prev, newProject])
+        setProjects(prev => Array.isArray(prev) ? [...prev, newProject] : [newProject])
         onSuccess?.(newProject)
       }
     )
