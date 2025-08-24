@@ -48,22 +48,22 @@ function App() {
     loadInitialProjects()
   }, []) // Empty dependency array ensures this runs only once on mount
 
-  useEffect(() => {
-    const loadTasksByProject = async () => {
-      if (activeProject) {
-        try {
-          await taskAPI.getTasksByProject(activeProject, (fetchedTasks) => {
-            setTasks(fetchedTasks)
-          })
-        } catch (error) {
-          // If API fails, gracefully continue with empty state (no need to set error state here)
-          // The error will already be handled by the API hook and shown in the UI
-          console.warn('Failed to load tasks for current project:', error)
-        }
+  const loadTasksByProject = async () => {
+    if (activeProject) {
+      try {
+        await taskAPI.getTasksByProject(activeProject, (fetchedTasks) => {
+          setTasks(fetchedTasks)
+        })
+      } catch (error) {
+        // If API fails, gracefully continue with empty state (no need to set error state here)
+        // The error will already be handled by the API hook and shown in the UI
+        console.warn('Failed to load tasks for current project:', error)
       }
     }
+  }
 
-    loadTasksByProject();
+  useEffect(() => {
+    loadTasksByProject()
   }, [activeProject])
 
   // Helper functions to get totals
@@ -144,6 +144,7 @@ function App() {
           ))
           setNewTaskName('')
           setActiveTask(newTask.id)
+          loadTasksByProject()
         }
       )
     } catch (error) {
