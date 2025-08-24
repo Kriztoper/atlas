@@ -87,6 +87,7 @@ export const useProjectAPI = () => {
 // Specific hook for task operations
 export const useTaskAPI = () => {
   const { loading, error, executeAPI, clearError } = useAPI()
+  const [tasks, setTasks] = useState([])
 
   const createTask = useCallback(async (projectId, taskData, onSuccess) => {
     return executeAPI(
@@ -95,10 +96,21 @@ export const useTaskAPI = () => {
     )
   }, [executeAPI])
 
+  const getTasksByProject = useCallback(async (projectId, onSuccess) => {
+    return executeAPI(
+      () => import('../services/api').then(({ taskAPI }) => taskAPI.getByProject(projectId)),
+      (fetchedTasks) => {
+        setTasks(fetchedTasks)
+        onSuccess?.(fetchedTasks)
+      }
+    )
+  }, [executeAPI])
+
   return {
     loading,
     error,
     createTask,
+    getTasksByProject,
     clearError,
   }
 }

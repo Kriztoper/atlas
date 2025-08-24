@@ -1,6 +1,7 @@
 (ns atlas.handlers
   (:require [cheshire.core :as json]
             ;[ring.middleware.json :refer [wrap-json-response]]
+            [next.jdbc.sql :as sql]
             [clojure.java.jdbc :as jdbc]
             [atlas.configuration.database-config :as db]))
 
@@ -52,3 +53,20 @@
         {:status 400
          :headers {"Content-Type" "application/json"}
          :body (json/generate-string {:message "Saving task failed"})}))))
+
+(defn get-tasks-by-project "Fetches tasks under the project"
+  [project-id]
+  (jdbc/with-db-connection [conn db/pg-spec]
+    (try
+      (let [tasks-by-project (sql/find-by-keys conn :task {:project_id (Integer/parseInt project-id)}
+                                               {:builder-fn next.jdbc.result-set/as-unqualified-maps})]
+        (if (empty? tasks-by-project)
+          {:status 200
+           :headers {"Content-Type" "application/json"}
+           :body (json/generate-string [])}
+          {:status 200
+           :headers {"Content-Type" "application/json"}
+           :body (json/generate-string tasks-by-project)}))
+      (catch Exception e
+        (println "Error fetching tasks: " e)))
+    ))

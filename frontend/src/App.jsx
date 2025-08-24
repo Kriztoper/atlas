@@ -10,6 +10,7 @@ import { useProjectAPI, useTaskAPI, useTodoAPI } from './hooks/useAPI'
 
 function App() {
   const [projects, setProjects] = useState([])
+  const [tasks, setTasks] = useState([])
   const [activeProject, setActiveProject] = useState(null)
   const [activeTask, setActiveTask] = useState(null)
   const [newProjectName, setNewProjectName] = useState('')
@@ -46,6 +47,24 @@ function App() {
 
     loadInitialProjects()
   }, []) // Empty dependency array ensures this runs only once on mount
+
+  useEffect(() => {
+    const loadTasksByProject = async () => {
+      if (activeProject) {
+        try {
+          await taskAPI.getTasksByProject(activeProject, (fetchedTasks) => {
+            setTasks(fetchedTasks)
+          })
+        } catch (error) {
+          // If API fails, gracefully continue with empty state (no need to set error state here)
+          // The error will already be handled by the API hook and shown in the UI
+          console.warn('Failed to load tasks for current project:', error)
+        }
+      }
+    }
+
+    loadTasksByProject();
+  }, [activeProject])
 
   // Helper functions to get totals
   const getProjectTaskCount = (project) => project.tasks?.length || 0
@@ -452,9 +471,9 @@ function App() {
           </div>
 
           {/* Tasks List */}
-          {currentProject.tasks && currentProject.tasks.length > 0 ? (
+          {tasks && tasks.length > 0 ? (
             <div className="tasks-grid">
-              {currentProject.tasks.map(task => (
+              {tasks.map(task => (
                 <TaskCard
                   key={task.id}
                   task={task}

@@ -8,7 +8,8 @@
   (GET "/" [] handlers/home)
   (POST "/api/projects" [] handlers/create-project)
   (GET "/api/projects" [] handlers/all-projects)
-  (POST "/api/projects/:project_id/tasks" [] handlers/create-task)
+  (POST "/api/projects/:project-id/tasks" [] handlers/create-task)
+  (GET "/api/projects/:project-id/tasks" [project-id] (handlers/get-tasks-by-project project-id))
   (route/not-found "Not Found"))
 
 (def app
