@@ -88,3 +88,20 @@
           :headers {"Content-Type" "application/json"}
           :body {json/generate-string {:message "Saving todo failed"}}}
          )))))
+
+(defn get-todos-by-task "Fetches todos under the task"
+  [task-id]
+  (jdbc/with-db-connection [conn db/pg-spec]
+    (try
+      (let [todos-by-task (sql/find-by-keys conn :todo {:task_id (Integer/parseInt task-id)}
+                                            {:builder-fn next.jdbc.result-set/as-unqualified-maps})]
+        (if (empty? todos-by-task)
+          {:status 200
+           :headers {"Content-Type" "application/json"}
+           :body (json/generate-string [])}
+          {:status 200
+           :headers {"Content-Type" "application/json"}
+           :body (json/generate-string todos-by-task)}))
+      (catch Exception e
+        (println "Error fetching todos: " e)))
+    ))

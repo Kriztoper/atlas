@@ -6,11 +6,19 @@
 
 (defroutes app-routes
   (GET "/" [] handlers/home)
+
+  ;; Project routes
   (POST "/api/projects" [] handlers/create-project)
   (GET "/api/projects" [] handlers/all-projects)
+
+  ;; Task routes
   (POST "/api/projects/:project-id/tasks" [] handlers/create-task)
   (GET "/api/projects/:project-id/tasks" [project-id] (handlers/get-tasks-by-project project-id))
+
+  ;; To do routes
   (POST "/api/tasks/:task-id/todos" [] handlers/create-todo)
+  (GET "/api/tasks/:task-id/todos" [task-id] (handlers/get-todos-by-task task-id))
+
   (route/not-found "Not Found"))
 
 (def app

@@ -11,6 +11,7 @@ import { useProjectAPI, useTaskAPI, useTodoAPI } from './hooks/useAPI'
 function App() {
   const [projects, setProjects] = useState([])
   const [tasks, setTasks] = useState([])
+  const [todos, setTodos] = useState([])
   const [activeProject, setActiveProject] = useState(null)
   const [activeTask, setActiveTask] = useState(null)
   const [newProjectName, setNewProjectName] = useState('')
@@ -65,6 +66,25 @@ function App() {
   useEffect(() => {
     loadTasksByProject()
   }, [activeProject])
+
+  const loadTodosByTask = async () => {
+    if (activeTask) {
+      try {
+        console.log('Fetching todos for task with id = ' + activeTask)
+        await todoAPI.getTodosByTask(activeTask, (fetchedTodos) => {
+          setTodos(fetchedTodos)
+        })
+      } catch (error) {
+        // If API fails, gracefully continue with empty state (no need to set error state here)
+        // The error will already be handled by the API hook and shown in the UI
+        console.warn('Failed to load todos for current task:', error)
+      }
+    }
+  }
+
+  useEffect(() => {
+    loadTodosByTask()
+  }, [activeTask])
 
   // Helper functions to get totals
   const getProjectTaskCount = (project) => project.tasks?.length || 0
@@ -526,9 +546,9 @@ function App() {
           </div>
 
           {/* Todos List */}
-          {currentTask.todos && currentTask.todos.length > 0 ? (
+          {todos && todos.length > 0 ? (
             <div className="todos-list">
-              {currentTask.todos.map(todo => (
+              {todos.map(todo => (
                 <TodoItem
                   key={todo.id}
                   todo={todo}

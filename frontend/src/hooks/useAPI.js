@@ -118,6 +118,17 @@ export const useTaskAPI = () => {
 // Specific hook for todo operations
 export const useTodoAPI = () => {
   const { loading, error, executeAPI, clearError } = useAPI()
+  const [todos, setTodos] = useState([])
+
+  const getTodosByTask = useCallback(async (taskId, onSuccess) => {
+    return executeAPI(
+      () => import('../services/api').then(({ todoAPI }) => todoAPI.getByTask(taskId)),
+      (fetchedTodos) => {
+        setTodos(fetchedTodos)
+        onSuccess?.(fetchedTodos)
+      }
+    )
+  }, [executeAPI])
 
   const createTodo = useCallback(async (taskId, todoData, onSuccess) => {
     return executeAPI(
@@ -143,6 +154,7 @@ export const useTodoAPI = () => {
   return {
     loading,
     error,
+    getTodosByTask,
     createTodo,
     markTodoComplete,
     deleteTodo,
