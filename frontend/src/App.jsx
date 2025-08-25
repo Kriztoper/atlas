@@ -337,7 +337,7 @@ function App() {
   }
 
   const currentProject = projects.find(p => p.id === activeProject)
-  const currentTask = currentProject?.tasks?.find(t => t.id === activeTask)
+  const currentTask = tasks.find(t => t.id === activeTask)
 
   // Breadcrumb items
   const breadcrumbItems = []
