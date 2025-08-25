@@ -10,6 +10,7 @@
   (GET "/api/projects" [] handlers/all-projects)
   (POST "/api/projects/:project-id/tasks" [] handlers/create-task)
   (GET "/api/projects/:project-id/tasks" [project-id] (handlers/get-tasks-by-project project-id))
+  (POST "/api/tasks/:task-id/todos" [] handlers/create-todo)
   (route/not-found "Not Found"))
 
 (def app

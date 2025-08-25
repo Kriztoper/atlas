@@ -70,3 +70,21 @@
       (catch Exception e
         (println "Error fetching tasks: " e)))
     ))
+
+(defn create-todo "Inserts new todo to DB where it is required to have a parent task"
+  [request]
+  (let [todo-data (json/parse-string (slurp (:body request)) true)]
+    ((try
+       (jdbc/with-db-connection [conn db/pg-db]
+         (let [inserted-todo (jdbc/insert! conn :todo {:task_id (:taskId todo-data)
+                                                       :text (:text todo-data)
+                                                       :description (:description todo-data)})]
+           {:status 200
+            :headers {"Content-Type" "application/json"}
+            :body (json/generate-string (first inserted-todo))}))
+       (catch Exception e
+         (println "Error creating todo: " e)
+         {:status 400
+          :headers {"Content-Type" "application/json"}
+          :body {json/generate-string {:message "Saving todo failed"}}}
+         )))))
