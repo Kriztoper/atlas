@@ -1,24 +1,16 @@
 (ns atlas.db.migrations
+  "Database migration management using Migratus."
   (:require [migratus.core :as migratus]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [atlas.config.database :as db-config]))
 
-;; Database configuration that can be overridden by environment variables
-(defn get-db-config []
-  {:dbtype "postgresql"
-   :host (or (System/getenv "DB_HOST") "localhost")
-   :port (or (System/getenv "DB_PORT") 5432)
-   :dbname (or (System/getenv "DB_NAME") "atlas_dev")
-   :user (or (System/getenv "DB_USER") "admin")
-   :password (or (System/getenv "DB_PASSWORD") "")})
-
-;; Enhanced migratus configuration
-(def migratus-config
+(def ^:private migratus-config
+  "Migratus configuration for database migrations."
   {:store :database
-   :db (get-db-config)
-   :migration-dir "resources/migrations" ;; directory for migration files
-   :migration-table-name "schema_migrations" ;; custom migration table name
-   :command-line-args [] ;; for CLI usage
-   })
+   :db (db-config/get-final-db-config)
+   :migration-dir "resources/migrations"
+   :migration-table-name "schema_migrations"
+   :command-line-args []})
 
 ;; Check if database connection is available
 (defn database-available? []

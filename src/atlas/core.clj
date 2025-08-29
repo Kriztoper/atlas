@@ -1,51 +1,14 @@
 (ns atlas.core
+  "Main application entry point and CLI command handling."
   (:gen-class)
   (:require [atlas.db.migrations :as migrations]
-            [ring.adapter.jetty :as jetty]
-            [atlas.routes :as routes]))
+            [atlas.server :as server]
+            [atlas.config.server :as config]))
 
-(def default-port 3001)
 
-(defn get-port []
-  (if-let [port-str (System/getenv "PORT")]
-    (try
-      (Integer/parseInt port-str)
-      (catch NumberFormatException _
-        (println (format "Invalid PORT environment variable: %s, using default: %d" port-str default-port))
-        default-port))
-    default-port))
-
-(defn start-server [port]
-  (println (format "🚀 Starting Atlas server on port %d..." port))
-  (try
-    (jetty/run-jetty routes/app
-                     {:port port
-                      :join? true
-                      :send-server-version? false
-                      :send-date-header? false})
-    (catch Exception e
-      (println "❌ Failed to start server:" (.getMessage e))
-      (System/exit 1))))
-
-(defn startup-banner []
-  (println "")
-  (println "  █████╗ ████████╗██╗      █████╗ ███████╗")
-  (println " ██╔══██╗╚══██╔══╝██║     ██╔══██╗██╔════╝")
-  (println " ███████║   ██║   ██║     ███████║███████╗")
-  (println " ██╔══██║   ██║   ██║     ██╔══██║╚════██║")
-  (println " ██║  ██║   ██║   ███████╗██║  ██║███████║")
-  (println " ╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝  ╚═╝╚══════╝")
-  (println "")
-  (println " Task Management Application")
-  (println " Version: 1.0.0")
-  (println ""))
-
-(defn -main [& args]
-  (startup-banner)
-  
-  (println "📋 Initializing Atlas application...")
-  
-  ;; Handle command line arguments for migration operations
+(defn handle-migration-commands
+  "Handle CLI commands for database migrations."
+  [args]
   (cond
     (some #{"migrate"} args)
     (do
@@ -65,31 +28,48 @@
       (System/exit 0))
     
     (some #{"create-migration"} args)
-    (let [name (or (first (drop-while #(not= "create-migration" %) args))
-                   (do
-                     (println "Usage: lein run create-migration <migration-name>")
-                     (System/exit 1)))]
-      (migrations/create-migration name)
-      (System/exit 0))
+    (let [migration-name (second (drop-while #(not= "create-migration" %) args))]
+      (if migration-name
+        (do
+          (migrations/create-migration migration-name)
+          (System/exit 0))
+        (do
+          (println "Usage: lein run create-migration <migration-name>")
+          (System/exit 1))))
     
-    :else
-    (do
-      ;; Normal startup process
-      (println "🔧 Running database migrations...")
-      
-      ;; Run migrations before starting the server
-      (try
-        (migrations/migrate)
-        (println "✅ Database migrations completed successfully!")
-        (catch Exception e
-          (println "❌ Migration failed, cannot start server:" (.getMessage e))
-          (System/exit 1)))
-      
-      ;; Start the HTTP server
-      (let [port (get-port)]
-        (println (format "🌐 Server will be available at: http://localhost:%d" port))
-        (println (format "📡 API endpoints will be available at: http://localhost:%d/api" port))
-        (println "💡 Press Ctrl+C to stop the server")
-        (println "")
-        
-        (start-server port)))))
+    :else false))
+
+(defn initialize-database
+  "Initialize database with migrations."
+  []
+  (println "🔧 Running database migrations...")
+  (try
+    (migrations/migrate)
+    (println "✅ Database migrations completed successfully!")
+    (catch Exception e
+      (println "❌ Migration failed, cannot start server:" (.getMessage e))
+      (throw e))))
+
+(defn start-application
+  "Start the main application server."
+  []
+  (try
+    (initialize-database)
+    (let [server-config (config/get-server-config)
+          port (:port server-config)]
+      (server/log-server-info port)
+      (server/start-server server-config))
+    (catch Exception e
+      (println "❌ Failed to start Atlas application:" (.getMessage e))
+      (System/exit 1))))
+
+(defn -main
+  "Application entry point."
+  [& args]
+  (server/startup-banner)
+  (println "📋 Initializing Atlas application...")
+  
+  ;; Handle migration commands first
+  (when-not (handle-migration-commands args)
+    ;; If no migration command, start the application
+    (start-application)))
