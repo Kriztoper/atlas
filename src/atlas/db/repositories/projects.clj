@@ -43,8 +43,10 @@
   {:pre [(s/valid? ::new-project project-data)]}
   (db/with-connection
     (fn [conn]
-      (db/insert! conn :project 
-                  (select-keys project-data [:name :description])))))
+      (let [new-project-keys (db/insert! conn :project
+                                         (select-keys project-data [:name :description]))
+            new-id (:id (first new-project-keys))]
+        (db/find-by-id conn :project new-id)))))
 
 (defn update!
   "Update an existing project."
@@ -82,7 +84,7 @@
         "SELECT p.id, p.name, p.description, p.created_at, p.updated_at,
                 COUNT(DISTINCT t.id) as task_count,
                 COUNT(DISTINCT todo.id) as todo_count,
-                COUNT(DISTINCT CASE WHEN todo.is_completed = true THEN todo.id END) as completed_todo_count
+                COUNT(DISTINCT CASE WHEN todo.completed = true THEN todo.id END) as completed_todo_count
          FROM project p
          LEFT JOIN task t ON p.id = t.project_id
          LEFT JOIN todo ON t.id = todo.task_id
