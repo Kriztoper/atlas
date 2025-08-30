@@ -162,6 +162,12 @@ class APIClient {
       
       const data = await this.parseResponse(modifiedResponse)
       
+      // Invalidate cache on successful mutations
+      if (modifiedConfig.method !== 'GET') {
+        console.log(`✅ Cache invalidated due to ${modifiedConfig.method} request to ${endpoint}`)
+        this.clearCache()
+      }
+
       // Cache successful GET requests
       if (modifiedConfig.method === 'GET' && data) {
         this.setCache(cacheKey, data)
