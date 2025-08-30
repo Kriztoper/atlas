@@ -106,12 +106,12 @@ function App() {
       // Try API call first
       await projectAPI.createProject(
         { name: newProjectName.trim() },
-        (apiProject) => {
+        async (apiProject) => {
           // On API success, refetch the projects to ensure consistency
-          loadProjects()
           setNewProjectName('')
           setActiveProject(apiProject.id)
           setActiveTask(null)
+          await loadProjects()
         }
       )
     } catch (error) {
@@ -147,11 +147,11 @@ function App() {
       await taskAPI.createTask(
         activeProject,
         { name: newTaskName.trim() },
-        (apiTask) => {
+        async (apiTask) => {
           // On API success, refetch the tasks to ensure consistency
-          loadTasksByProject()
           setNewTaskName('')
           setActiveTask(apiTask.id)
+          await loadTasksByProject()
         }
       )
     } catch (error) {
@@ -197,10 +197,10 @@ function App() {
       await todoAPI.createTodo(
         activeTask,
         { text: newTodoText.trim() },
-        (apiTodo) => {
+        async (apiTodo) => {
           // On API success, refetch the todos to ensure consistency
-          loadTodosByTask()
           setNewTodoText('')
+          await loadTodosByTask()
         }
       )
     } catch (error) {
