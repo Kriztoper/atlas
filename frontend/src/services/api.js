@@ -72,7 +72,7 @@ export const todoAPI = {
       text: todoData.text,
       description: todoData.description || '',
       taskId: taskId,
-      completed: false,
+      isCompleted: false,
     })
   },
 
@@ -92,10 +92,10 @@ export const todoAPI = {
   },
 
   // PATCH /api/todos/:id/complete
-  markComplete: async (todoId, completed = true) => {
+  markComplete: async (todoId, isCompleted = true) => {
     return apiClient.patch(`/todos/${todoId}/complete`, {
-      completed: completed,
-      completedAt: completed ? new Date().toISOString() : null,
+      isCompleted: isCompleted,
+      completedAt: isCompleted ? new Date().toISOString() : null,
     })
   },
 

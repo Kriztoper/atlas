@@ -8,17 +8,17 @@
 (s/def ::task-id pos-int?)
 (s/def ::text (s/and string? #(not (empty? %))))
 (s/def ::description (s/nilable string?))
-(s/def ::completed boolean?)
+(s/def ::is_completed boolean?)
 (s/def ::created-at inst?)
 (s/def ::updated-at inst?)
 
 (s/def ::todo
   (s/keys :req-un [::id ::task-id ::text]
-          :opt-un [::description ::completed ::created-at ::updated-at]))
+          :opt-un [::description ::is_completed ::created-at ::updated-at]))
 
 (s/def ::new-todo
   (s/keys :req-un [::task-id ::text]
-          :opt-un [::description ::completed]))
+          :opt-un [::description ::is_completed]))
 
 ;; Repository functions
 (defn find-all
@@ -26,10 +26,10 @@
   []
   (db/with-readonly-connection
     (fn [conn]
-      (db/execute-query! conn 
-                         "SELECT id, task_id, text, description, completed, created_at, updated_at 
-                          FROM todo 
-                          ORDER BY created_at DESC" 
+      (db/execute-query! conn
+                         "SELECT id, task_id, text, description, is_completed, created_at, updated_at
+                          FROM todo
+                          ORDER BY created_at DESC"
                          []))))
 
 (defn find-by-id
@@ -52,8 +52,8 @@
   {:pre [(s/valid? ::new-todo todo-data)]}
   (db/with-connection
     (fn [conn]
-      (let [todo-record (merge {:completed false}
-                               (select-keys todo-data [:task_id :text :description :completed]))]
+      (let [todo-record (merge {:is_completed false}
+                               (select-keys todo-data [:task_id :text :description :is_completed]))]
         (db/insert! conn :todo todo-record)))))
 
 (defn update!
@@ -61,9 +61,9 @@
   [todo-id updates]
   (db/with-connection
     (fn [conn]
-      (let [allowed-fields (select-keys updates [:text :description :completed])]
+      (let [allowed-fields (select-keys updates [:text :description :is_completed])]
         (when (seq allowed-fields)
-          (db/update! conn :todo 
+          (db/update! conn :todo
                      (assoc allowed-fields :updated_at (java.time.Instant/now))
                      {:id todo-id})
           (db/find-by-id conn :todo todo-id))))))
@@ -75,8 +75,8 @@
     (fn [conn]
       (let [todo (db/find-by-id conn :todo todo-id)]
         (when todo
-          (db/update! conn :todo 
-                     {:completed (not (:completed todo))
+          (db/update! conn :todo
+                     {:is_completed (not (:is_completed todo))
                       :updated_at (java.time.Instant/now)}
                      {:id todo-id})
           (db/find-by-id conn :todo todo-id))))))
@@ -84,12 +84,12 @@
 (defn mark-completed!
   "Mark a todo as completed."
   [todo-id]
-  (update! todo-id {:completed true}))
+  (update! todo-id {:is_completed true}))
 
 (defn mark-pending!
   "Mark a todo as pending (not completed)."
   [todo-id]
-  (update! todo-id {:completed false}))
+  (update! todo-id {:is_completed false}))
 
 (defn delete!
   "Delete a todo by ID."
@@ -112,11 +112,11 @@
   (db/with-readonly-connection
     (fn [conn]
       (first (db/execute-query! conn
-               "SELECT 
+               "SELECT
                   COUNT(*) as total_count,
-                  COUNT(CASE WHEN completed = true THEN 1 END) as completed_count,
-                  COUNT(CASE WHEN completed = false THEN 1 END) as pending_count
-                FROM todo 
+                  COUNT(CASE WHEN is_completed = true THEN 1 END) as completed_count,
+                  COUNT(CASE WHEN is_completed = false THEN 1 END) as pending_count
+                FROM todo
                 WHERE task_id = ?"
                [task-id])))))
 
@@ -126,9 +126,9 @@
   (db/with-readonly-connection
     (fn [conn]
       (db/execute-query! conn
-                         "SELECT id, task_id, text, description, completed, created_at, updated_at 
-                          FROM todo 
-                          WHERE task_id = ? AND completed = true 
+                         "SELECT id, task_id, text, description, is_completed, created_at, updated_at
+                          FROM todo
+                          WHERE task_id = ? AND is_completed = true
                           ORDER BY updated_at DESC"
                          [task-id]))))
 
@@ -138,8 +138,8 @@
   (db/with-readonly-connection
     (fn [conn]
       (db/execute-query! conn
-                         "SELECT id, task_id, text, description, completed, created_at, updated_at 
-                          FROM todo 
-                          WHERE task_id = ? AND completed = false 
+                         "SELECT id, task_id, text, description, is_completed, created_at, updated_at
+                          FROM todo
+                          WHERE task_id = ? AND is_completed = false
                           ORDER BY created_at DESC"
                          [task-id]))))

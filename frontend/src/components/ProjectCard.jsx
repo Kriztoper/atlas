@@ -5,7 +5,7 @@ const ProjectCard = ({ project, isActive, onSelect, onDelete }) => {
   const taskCount = project.tasks?.length || 0
   const totalTodos = project.tasks?.reduce((total, task) => total + (task.todos?.length || 0), 0) || 0
   const completedTodos = project.tasks?.reduce((total, task) => 
-    total + (task.todos?.filter(todo => todo.completed).length || 0), 0) || 0
+    total + (task.todos?.filter(todo => todo.isCompleted).length || 0), 0) || 0
 
   return (
     <div className={`project-card ${isActive ? 'active' : ''}`} onClick={() => onSelect(project.id)}>
