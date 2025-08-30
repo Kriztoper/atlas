@@ -23,30 +23,30 @@ function App() {
   const taskAPI = useTaskAPI()
   const todoAPI = useTodoAPI()
 
+  const loadProjects = async () => {
+    try {
+      await projectAPI.getAllProjects((fetchedProjects) => {
+        if (fetchedProjects.data && fetchedProjects.data.length === 0) {
+          return;
+        }
+
+        // On API success, use the fetched projects with proper nested structure
+        const structuredProjects = fetchedProjects.map(project => ({
+          ...project,
+          tasks: project.tasks || [],
+        }))
+        setProjects(structuredProjects)
+      })
+    } catch (error) {
+      // If API fails, gracefully continue with empty state (no need to set error state here)
+      // The error will already be handled by the API hook and shown in the UI
+      console.warn('Failed to load initial projects, starting with empty state:', error)
+    }
+  }
+
   // Load projects on initial app mount (only once)
   useEffect(() => {
-    const loadInitialProjects = async () => {
-      try {
-        await projectAPI.getAllProjects((fetchedProjects) => {
-          if (fetchedProjects.data && fetchedProjects.data.length === 0) {
-            return;
-          }
-
-          // On API success, use the fetched projects with proper nested structure
-          const structuredProjects = fetchedProjects.map(project => ({
-            ...project,
-            tasks: project.tasks || [],
-          }))
-          setProjects(structuredProjects)
-        })
-      } catch (error) {
-        // If API fails, gracefully continue with empty state (no need to set error state here)
-        // The error will already be handled by the API hook and shown in the UI
-        console.warn('Failed to load initial projects, starting with empty state:', error)
-      }
-    }
-
-    loadInitialProjects()
+    loadProjects()
   }, []) // Empty dependency array ensures this runs only once on mount
 
   const loadTasksByProject = async () => {
@@ -107,14 +107,10 @@ function App() {
       await projectAPI.createProject(
         { name: newProjectName.trim() },
         (apiProject) => {
-          // On API success, use the response from the API
-          const newProject = {
-            ...apiProject,
-            tasks: apiProject.tasks || [],
-          }
-          setProjects([...projects, newProject])
+          // On API success, refetch the projects to ensure consistency
+          loadProjects()
           setNewProjectName('')
-          setActiveProject(newProject.id)
+          setActiveProject(apiProject.id)
           setActiveTask(null)
         }
       )
@@ -152,19 +148,10 @@ function App() {
         activeProject,
         { name: newTaskName.trim() },
         (apiTask) => {
-          // On API success, use the response from the API
-          const newTask = {
-            ...apiTask,
-            todos: apiTask.todos || [],
-          }
-          setProjects(projects.map(project => 
-            project.id === activeProject 
-              ? { ...project, tasks: [...(project.tasks || []), newTask] }
-              : project
-          ))
-          setTasks([...tasks, newTask])
+          // On API success, refetch the tasks to ensure consistency
+          loadTasksByProject()
           setNewTaskName('')
-          setActiveTask(newTask.id)
+          setActiveTask(apiTask.id)
         }
       )
     } catch (error) {
@@ -211,24 +198,8 @@ function App() {
         activeTask,
         { text: newTodoText.trim() },
         (apiTodo) => {
-          // On API success, use the response from the API
-          const newTodo = {
-            ...apiTodo,
-            isCompleted: apiTodo.isCompleted || false,
-          }
-          setProjects(projects.map(project => 
-            project.id === activeProject
-              ? {
-                  ...project,
-                  tasks: project.tasks.map(task =>
-                    task.id === activeTask
-                      ? { ...task, todos: [...(task.todos || []), newTodo] }
-                      : task
-                  )
-                }
-              : project
-          ))
-          setTodos([...todos, newTodo])
+          // On API success, refetch the todos to ensure consistency
+          loadTodosByTask()
           setNewTodoText('')
         }
       )
