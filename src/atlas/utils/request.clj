@@ -3,17 +3,24 @@
   (:require [cheshire.core :as json]
             [clojure.string :as str]))
 
+(defn- camel->snake-keyword
+  "Converts a camelCase string to a snake_case keyword."
+  [s]
+  (keyword
+   (str/lower-case
+    (str/replace s #"([a-z])([A-Z])" "$1_$2"))))
+
 (defn parse-json-body
-  "Parse JSON request body safely."
+  "Parse JSON request body safely, converting keys to snake_case keywords."
   [request]
   (try
     (when-let [body (:body request)]
       (let [body-str (if (string? body) body (slurp body))]
         (when-not (str/blank? body-str)
-          (json/parse-string body-str true))))
+          (json/parse-string body-str camel->snake-keyword))))
     (catch Exception e
-      (throw (ex-info "Invalid JSON in request body" 
-                      {:type :invalid-json 
+      (throw (ex-info "Invalid JSON in request body"
+                      {:type :invalid-json
                        :message (.getMessage e)})))))
 
 (defn get-path-param
