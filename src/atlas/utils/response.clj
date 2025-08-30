@@ -1,6 +1,14 @@
 (ns atlas.utils.response
   "Utilities for creating consistent HTTP responses."
-  (:require [cheshire.core :as json]))
+  (:require [cheshire.core :as json]
+            [clojure.string :as str]))
+
+(defn- snake-kw->camel-str
+  "Converts a snake_case keyword to a camelCase string."
+  [kw]
+  (let [s (name kw)
+        parts (str/split s #"_")]
+    (apply str (first parts) (map str/capitalize (rest parts)))))
 
 (def ^:private default-headers
   {"Content-Type" "application/json"
@@ -15,7 +23,7 @@
   ([data status extra-headers]
    {:status status
     :headers (merge default-headers extra-headers)
-    :body (json/generate-string data)}))
+    :body (json/generate-string data {:key-fn snake-kw->camel-str})}))
 
 (defn error-response
   "Create an error HTTP response."
@@ -29,7 +37,8 @@
     :body (json/generate-string
            (merge {:error true
                    :message message}
-                  extra-data))}))
+                  extra-data)
+           {:key-fn snake-kw->camel-str})}))
 
 (defn not-found-response
   "Create a 404 not found response."
