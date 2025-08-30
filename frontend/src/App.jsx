@@ -162,9 +162,9 @@ function App() {
               ? { ...project, tasks: [...(project.tasks || []), newTask] }
               : project
           ))
+          setTasks([...tasks, newTask])
           setNewTaskName('')
           setActiveTask(newTask.id)
-          loadTasksByProject()
         }
       )
     } catch (error) {
@@ -181,6 +181,7 @@ function App() {
           ? { ...project, tasks: [...(project.tasks || []), newTask] }
           : project
       ))
+      setTasks([...tasks, newTask])
       setNewTaskName('')
       setActiveTask(newTask.id)
     }
@@ -227,6 +228,7 @@ function App() {
                 }
               : project
           ))
+          setTodos([...todos, newTodo])
           setNewTodoText('')
         }
       )
@@ -251,6 +253,7 @@ function App() {
             }
           : project
       ))
+      setTodos([...todos, newTodo])
       setNewTodoText('')
     }
   }

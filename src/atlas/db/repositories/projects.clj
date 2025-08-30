@@ -43,8 +43,10 @@
   {:pre [(s/valid? ::new-project project-data)]}
   (db/with-connection
     (fn [conn]
-      (db/insert! conn :project 
-                  (select-keys project-data [:name :description])))))
+      (let [new-project-keys (db/insert! conn :project
+                                         (select-keys project-data [:name :description]))
+            new-id (:id (first new-project-keys))]
+        (db/find-by-id conn :project new-id)))))
 
 (defn update!
   "Update an existing project."
