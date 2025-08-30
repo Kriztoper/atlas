@@ -93,10 +93,10 @@ function App() {
   }
   const getProjectCompletedCount = (project) => {
     return project.tasks?.reduce((total, task) => 
-      total + (task.todos?.filter(todo => todo.completed).length || 0), 0) || 0
+      total + (task.todos?.filter(todo => todo.isCompleted).length || 0), 0) || 0
   }
   const getTaskTodoCount = (task) => task.todos?.length || 0
-  const getTaskCompletedCount = (task) => task.todos?.filter(todo => todo.completed).length || 0
+  const getTaskCompletedCount = (task) => task.todos?.filter(todo => todo.isCompleted).length || 0
 
   // Project management functions
   const createProject = async () => {
@@ -213,7 +213,7 @@ function App() {
           // On API success, use the response from the API
           const newTodo = {
             ...apiTodo,
-            completed: apiTodo.completed || false,
+            isCompleted: apiTodo.isCompleted || false,
           }
           setProjects(projects.map(project => 
             project.id === activeProject
@@ -236,7 +236,7 @@ function App() {
       const newTodo = {
         id: Date.now(),
         text: newTodoText.trim(),
-        completed: false,
+        isCompleted: false,
         createdAt: new Date().toISOString()
       }
       setProjects(projects.map(project => 
@@ -260,7 +260,7 @@ function App() {
     const currentTodo = currentTask?.todos?.find(t => t.id === todoId)
     if (!currentTodo) return
     
-    const newCompletedState = !currentTodo.completed
+    const newCompletedState = !currentTodo.isCompleted
     
     try {
       // Try API call first
@@ -278,7 +278,7 @@ function App() {
                       ? {
                           ...task,
                           todos: task.todos.map(todo =>
-                            todo.id === todoId ? { ...todo, completed: newCompletedState } : todo
+                            todo.id === todoId ? { ...todo, isCompleted: newCompletedState } : todo
                           )
                         }
                       : task
@@ -300,7 +300,7 @@ function App() {
                   ? {
                       ...task,
                       todos: task.todos.map(todo =>
-                        todo.id === todoId ? { ...todo, completed: newCompletedState } : todo
+                        todo.id === todoId ? { ...todo, isCompleted: newCompletedState } : todo
                       )
                     }
                   : task

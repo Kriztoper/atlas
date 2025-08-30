@@ -88,7 +88,7 @@
           [#(max-length? % 300) "Text must not exceed 300 characters"]]
    :task_id [[required? "Task ID is required"]
              [valid-integer? "Task ID must be a valid integer"]]
-   :completed [[valid-boolean? "Completed must be a boolean value"]]})
+   :is_completed [[valid-boolean? "Completed must be a boolean value"]]})
 
 (defn validate-project
   "Validate project data."

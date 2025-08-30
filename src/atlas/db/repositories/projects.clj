@@ -82,7 +82,7 @@
         "SELECT p.id, p.name, p.description, p.created_at, p.updated_at,
                 COUNT(DISTINCT t.id) as task_count,
                 COUNT(DISTINCT todo.id) as todo_count,
-                COUNT(DISTINCT CASE WHEN todo.completed = true THEN todo.id END) as completed_todo_count
+                COUNT(DISTINCT CASE WHEN todo.is_completed = true THEN todo.id END) as completed_todo_count
          FROM project p
          LEFT JOIN task t ON p.id = t.project_id
          LEFT JOIN todo ON t.id = todo.task_id

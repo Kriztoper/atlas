@@ -112,7 +112,7 @@ const appReducer = (state, action) => {
     case ACTIONS.ADD_TODO:
       return {
         ...state,
-        todos: [...state.todos, { ...action.payload, completed: action.payload.completed || false }],
+        todos: [...state.todos, { ...action.payload, isCompleted: action.payload.isCompleted || false }],
         projects: state.projects.map(project => 
           project.id === state.activeProject
             ? {
@@ -121,7 +121,7 @@ const appReducer = (state, action) => {
                   task.id === state.activeTask
                     ? { 
                         ...task, 
-                        todos: [...(task.todos || []), { ...action.payload, completed: action.payload.completed || false }] 
+                        todos: [...(task.todos || []), { ...action.payload, isCompleted: action.payload.isCompleted || false }]
                       }
                     : task
                 )
@@ -232,12 +232,12 @@ export const AppProvider = ({ children }) => {
   
   const getProjectCompletedCount = (project) => {
     return project.tasks?.reduce((total, task) => 
-      total + (task.todos?.filter(todo => todo.completed).length || 0), 0) || 0
+      total + (task.todos?.filter(todo => todo.isCompleted).length || 0), 0) || 0
   }
   
   const getTaskTodoCount = (task) => task.todos?.length || 0
   
-  const getTaskCompletedCount = (task) => task.todos?.filter(todo => todo.completed).length || 0
+  const getTaskCompletedCount = (task) => task.todos?.filter(todo => todo.isCompleted).length || 0
   
   const value = {
     ...state,

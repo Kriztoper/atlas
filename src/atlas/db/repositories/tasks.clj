@@ -89,7 +89,7 @@
       (db/execute-query! conn
         "SELECT t.id, t.project_id, t.name, t.description, t.created_at, t.updated_at,
                 COUNT(todo.id) as todo_count,
-                COUNT(CASE WHEN todo.completed = true THEN todo.id END) as completed_todo_count
+                COUNT(CASE WHEN todo.is_completed = true THEN todo.id END) as completed_todo_count
          FROM task t
          LEFT JOIN todo ON t.id = todo.task_id
          WHERE t.project_id = ?
