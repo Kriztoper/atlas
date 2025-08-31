@@ -81,6 +81,15 @@
                      {:id todo-id})
           (db/find-by-id conn :todo todo-id))))))
 
+(defn mark-completed!
+  "Mark a todo as completed."
+  [todo-id]
+  (update! todo-id {:is_completed true}))
+
+(defn mark-pending!
+  "Mark a todo as pending (not completed)."
+  [todo-id]
+  (update! todo-id {:is_completed false}))
 
 (defn delete!
   "Delete a todo by ID."
