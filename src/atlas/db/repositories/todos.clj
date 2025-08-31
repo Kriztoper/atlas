@@ -64,7 +64,7 @@
       (let [allowed-fields (select-keys updates [:text :description :is_completed])]
         (when (seq allowed-fields)
           (db/update! conn :todo
-                     (assoc allowed-fields :updated_at (java.time.Instant/now))
+                     allowed-fields
                      {:id todo-id})
           (db/find-by-id conn :todo todo-id))))))
 

@@ -95,8 +95,7 @@ function App() {
     return project.tasks?.reduce((total, task) => 
       total + (task.todos?.filter(todo => todo.isCompleted).length || 0), 0) || 0
   }
-  const getTaskTodoCount = (task) => task.todos?.length || 0
-  const getTaskCompletedCount = (task) => task.todos?.filter(todo => todo.isCompleted).length || 0
+  const getTaskTodoCount = (task) => task.todoCount || 0
 
   // Project management functions
   const createProject = async () => {
@@ -231,9 +230,9 @@ function App() {
 
   const toggleTodo = async (todoId) => {
     // Find the current todo to get its current state
-    const currentTodo = currentTask?.todos?.find(t => t.id === todoId)
+    const currentTodo = todos.find(t => t.id === todoId)
     if (!currentTodo) return
-    
+
     const newCompletedState = !currentTodo.isCompleted
     
     try {
@@ -460,8 +459,8 @@ function App() {
                   isActive={activeTask === task.id}
                   onSelect={setActiveTask}
                   onDelete={deleteTask}
-                  todoCount={getTaskTodoCount(task)}
-                  completedCount={getTaskCompletedCount(task)}
+                  todoCount={task.todoCount}
+                  completedCount={task.completedTodoCount}
                 />
               ))}
             </div>

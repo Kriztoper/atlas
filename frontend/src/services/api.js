@@ -45,7 +45,7 @@ export const taskAPI = {
 
   // GET /api/projects/:projectId/tasks
   getByProject: async (projectId) => {
-    return apiClient.get(`/projects/${projectId}/tasks`)
+    return apiClient.get(`/projects/${projectId}/tasks/stats`)
   },
 
   // GET /api/tasks/:id
