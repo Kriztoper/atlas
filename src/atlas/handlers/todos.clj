@@ -155,10 +155,12 @@
   "Mark a todo as completed."
   [req]
   (try
-    (let [todo-id (request/parse-integer-param 
-                    (get-in req [:route-params :todo-id]) 
-                    "todo-id")]
-      (if-let [updated-todo (todos-repo/mark-completed! todo-id)]
+    (let [todo-id (request/parse-integer-param
+                    (get-in req [:route-params :todo-id])
+                    "todo-id")
+          todo-data (request/parse-json-body req)
+          is-completed (:is_completed todo-data)]
+      (if-let [updated-todo (todos-repo/update! todo-id {:is_completed is-completed})]
         (response/success-response updated-todo)
         (response/not-found-response "Todo not found")))
     (catch clojure.lang.ExceptionInfo e

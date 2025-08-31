@@ -241,25 +241,10 @@ function App() {
       await todoAPI.markTodoComplete(
         todoId,
         newCompletedState,
-        () => {
-          // On API success, update local state
-          setProjects(projects.map(project => 
-            project.id === activeProject
-              ? {
-                  ...project,
-                  tasks: project.tasks.map(task =>
-                    task.id === activeTask
-                      ? {
-                          ...task,
-                          todos: task.todos.map(todo =>
-                            todo.id === todoId ? { ...todo, isCompleted: newCompletedState } : todo
-                          )
-                        }
-                      : task
-                  )
-                }
-              : project
-          ))
+        async () => {
+          // On API success, refetch todos and tasks to ensure consistency
+          await loadTodosByTask()
+          await loadTasksByProject()
         }
       )
     } catch (error) {
